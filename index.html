@@ -1,182 +1,184 @@
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-    <meta charset="UTF-8">
-    <title>迷路ゲーム</title>
-    <style>
-    body { margin:0; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#222; color:white; font-family:sans-serif; }
-    #mazeCanvas { background:white; border:2px solid #000; margin-top:20px; display:none; }
-    button { padding:10px 20px; margin:5px; font-size:16px; cursor:pointer; }
-    .menu { text-align:center; }
-    #timer { font-size:20px; margin-top:10px; display:none; }
-    </style>
-    </head>
-    <body>
-    <div class="menu">
-    <h1>迷路ゲーム</h1>
-    <p>難易度を選択してください</p>
-    <button onclick="startGame('easy')">簡単</button>
-    <button onclick="startGame('normal')">普通</button>
-    <button onclick="startGame('hard')">難しい</button>
-    </div>
-    <div id="timer">Time: 0s</div>
-    <canvas id="mazeCanvas" width="600" height="600"></canvas>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>迷路ゲーム</title>
+<style>
+body { margin:0; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#222; color:white; font-family:sans-serif; }
+#mazeCanvas { background:white; border:2px solid #000; margin-top:20px; display:none; }
+button { padding:10px 20px; margin:5px; font-size:16px; cursor:pointer; }
+.menu { text-align:center; }
+#timer { font-size:20px; margin-top:10px; display:none; }
+</style>
+</head>
+<body>
+<div class="menu">
+  <h1>迷路ゲーム</h1>
+  <p>難易度を選択してください</p>
+  <button onclick="startGame('easy')">簡単</button>
+  <button onclick="startGame('normal')">普通</button>
+  <button onclick="startGame('hard')">難しい</button>
+</div>
+<div id="timer">Time: 0s</div>
+<canvas id="mazeCanvas" width="600" height="600"></canvas>
 
-    <script>
-    const canvas = document.getElementById("mazeCanvas");
-    const ctx = canvas.getContext("2d");
-    const timerDiv = document.getElementById("timer");
+<script>
+const canvas = document.getElementById("mazeCanvas");
+const ctx = canvas.getContext("2d");
+const timerDiv = document.getElementById("timer");
 
-    let rows, cols, cellSize, moveInterval;
-    let grid=[], stack=[], player={}, goal={}, startTime;
-    let lastMoveTime=0;
+let rows, cols, cellSize, moveInterval;
+let grid=[], stack=[], player={}, goal={}, startTime;
+let lastMoveTime=0;
 
-    class Cell {
-    constructor(x,y){
-        this.x=x; this.y=y;
-        this.walls=[true,true,true,true];
-        this.visited=false;
-    }
-    draw(){
-        let x=this.x*cellSize, y=this.y*cellSize;
-        ctx.strokeStyle="black"; ctx.lineWidth=2;
-        if(this.walls[0]) drawLine(x,y,x+cellSize,y);
-        if(this.walls[1]) drawLine(x+cellSize,y,x+cellSize,y+cellSize);
-        if(this.walls[2]) drawLine(x+cellSize,y+cellSize,x,y+cellSize);
-        if(this.walls[3]) drawLine(x,y+cellSize,x,y);
-    }
-    }
+class Cell {
+  constructor(x,y){
+    this.x=x; this.y=y;
+    this.walls=[true,true,true,true];
+    this.visited=false;
+  }
+  draw(){
+    let x=this.x*cellSize, y=this.y*cellSize;
+    ctx.strokeStyle="black"; ctx.lineWidth=2;
+    if(this.walls[0]) drawLine(x,y,x+cellSize,y);
+    if(this.walls[1]) drawLine(x+cellSize,y,x+cellSize,y+cellSize);
+    if(this.walls[2]) drawLine(x+cellSize,y+cellSize,x,y+cellSize);
+    if(this.walls[3]) drawLine(x,y+cellSize,x,y);
+  }
+}
 
-    function drawLine(x1,y1,x2,y2){
-    ctx.beginPath();
-    ctx.moveTo(x1,y1);
-    ctx.lineTo(x2,y2);
-    ctx.stroke();
-    }
+function drawLine(x1,y1,x2,y2){
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+}
 
-    function startGame(difficulty){
-    document.querySelector('.menu').style.display='none';
-    canvas.style.display='block';
-    timerDiv.style.display='block';
+function startGame(difficulty){
+  document.querySelector('.menu').style.display='none';
+  canvas.style.display='block';
+  timerDiv.style.display='block';
 
-    // 難易度設定
-    switch(difficulty){
-        case 'easy': rows=cols=8; moveInterval=200; break;
-        case 'normal': rows=cols=12; moveInterval=150; break;
-        case 'hard': rows=cols=15; moveInterval=100; break;
-    }
-    cellSize=Math.min(canvas.width/cols, canvas.height/rows);
-    grid=[]; stack=[];
-    for(let y=0;y<rows;y++){
-        for(let x=0;x<cols;x++) grid.push(new Cell(x,y));
-    }
-    player={x:0,y:0};
-    goal={x:cols-1,y:rows-1};
-    current=grid[0];
-    startTime = Date.now();
-    generateMaze();
-    requestAnimationFrame(gamepadLoop);
+  // 難易度設定
+  switch(difficulty){
+    case 'easy': rows=cols=8; moveInterval=200; break;
+    case 'normal': rows=cols=12; moveInterval=150; break;
+    case 'hard': rows=cols=15; moveInterval=100; break;
+  }
+  cellSize=Math.min(canvas.width/cols, canvas.height/rows);
+  grid=[]; stack=[];
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++) grid.push(new Cell(x,y));
+  }
+  player={x:0,y:0};
+  goal={x:cols-1,y:rows-1};
+  current=grid[0];
+  startTime = Date.now();
+  generateMaze();
+  requestAnimationFrame(gamepadLoop);
+  requestAnimationFrame(updateTimer);
+}
+
+function index(x,y){ if(x<0||y<0||x>=cols||y>=rows) return -1; return x+y*cols; }
+
+let current;
+function generateMaze(){
+  current.visited=true;
+  let next=checkNeighbors(current);
+  if(next){ next.visited=true; stack.push(current); removeWalls(current,next); current=next; }
+  else if(stack.length>0) current=stack.pop();
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  grid.forEach(c=>c.draw());
+  drawPlayerAndGoal();
+
+  if(stack.length>0) requestAnimationFrame(generateMaze);
+}
+
+function checkNeighbors(cell){
+  let neighbors=[], top=grid[index(cell.x,cell.y-1)], right=grid[index(cell.x+1,cell.y)], bottom=grid[index(cell.x,cell.y+1)], left=grid[index(cell.x-1,cell.y)];
+  [top,right,bottom,left].forEach(n=>{ if(n && !n.visited) neighbors.push(n); });
+  return neighbors.length>0? neighbors[Math.floor(Math.random()*neighbors.length)] : undefined;
+}
+
+function removeWalls(a,b){
+  let x=a.x-b.x, y=a.y-b.y;
+  if(x===1){ a.walls[3]=false; b.walls[1]=false; }
+  else if(x===-1){ a.walls[1]=false; b.walls[3]=false; }
+  if(y===1){ a.walls[0]=false; b.walls[2]=false; }
+  else if(y===-1){ a.walls[2]=false; b.walls[0]=false; }
+}
+
+function drawPlayerAndGoal(){
+  ctx.fillStyle="gold"; ctx.fillRect(goal.x*cellSize,goal.y*cellSize,cellSize,cellSize);
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(player.x*cellSize+cellSize/2,player.y*cellSize+cellSize/2,cellSize/3,0,Math.PI*2);
+  ctx.fill();
+}
+
+// 自由に戻れる仕様
+function movePlayer(dx,dy){
+  const nextX = player.x + dx;
+  const nextY = player.y + dy;
+  if(nextX<0 || nextX>=cols || nextY<0 || nextY>=rows) return; // 外には出れない
+  const cell = grid[index(player.x,player.y)];
+  // 壁チェック
+  if(dx===-1 && cell.walls[3]) return;
+  if(dx===1 && cell.walls[1]) return;
+  if(dy===-1 && cell.walls[0]) return;
+  if(dy===1 && cell.walls[2]) return;
+
+  player.x = nextX;
+  player.y = nextY;
+  drawPlayerAndGoal();
+
+  if(player.x===goal.x && player.y===goal.y){
+    const timeElapsed = Math.floor((Date.now()-startTime)/1000);
+    alert(`🎉 クリア！タイム: ${timeElapsed}s`);
+
+    // メニューに戻す
+    document.querySelector('.menu').style.display = 'block';
+    canvas.style.display = 'none';
+    timerDiv.style.display = 'none';
+  }
+}
+
+document.addEventListener("keydown",(e)=>{
+  switch(e.key){
+    case "ArrowUp": case "w": movePlayer(0,-1); break;
+    case "ArrowDown": case "s": movePlayer(0,1); break;
+    case "ArrowLeft": case "a": movePlayer(-1,0); break;
+    case "ArrowRight": case "d": movePlayer(1,0); break;
+  }
+});
+
+function gamepadLoop(timestamp){
+  const gamepads = navigator.getGamepads();
+  if(gamepads[0]){
+    const gp = gamepads[0]; let dx=0, dy=0;
+    if(gp.buttons[14]?.pressed) dx=-1;
+    if(gp.buttons[15]?.pressed) dx=1;
+    if(gp.buttons[12]?.pressed) dy=-1;
+    if(gp.buttons[13]?.pressed) dy=1;
+    const threshold=0.5;
+    if(gp.axes[0]<-threshold) dx=-1;
+    if(gp.axes[0]>threshold) dx=1;
+    if(gp.axes[1]<-threshold) dy=-1;
+    if(gp.axes[1]>threshold) dy=1;
+    if(dx!==0||dy!==0){ if(timestamp-lastMoveTime>moveInterval){ movePlayer(dx,dy); lastMoveTime=timestamp; } }
+  }
+  requestAnimationFrame(gamepadLoop);
+}
+
+// タイマー更新
+function updateTimer(){
+  if(player.x!==goal.x || player.y!==goal.y){
+    const seconds = Math.floor((Date.now()-startTime)/1000);
+    timerDiv.textContent = `Time: ${seconds}s`;
     requestAnimationFrame(updateTimer);
-    }
-
-    function index(x,y){ if(x<0||y<0||x>=cols||y>=rows) return -1; return x+y*cols; }
-
-    let current;
-    function generateMaze(){
-    current.visited=true;
-    let next=checkNeighbors(current);
-    if(next){ next.visited=true; stack.push(current); removeWalls(current,next); current=next; }
-    else if(stack.length>0) current=stack.pop();
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    grid.forEach(c=>c.draw());
-    drawPlayerAndGoal();
-
-    if(stack.length>0) requestAnimationFrame(generateMaze);
-    }
-
-    function checkNeighbors(cell){
-    let neighbors=[], top=grid[index(cell.x,cell.y-1)], right=grid[index(cell.x+1,cell.y)], bottom=grid[index(cell.x,cell.y+1)], left=grid[index(cell.x-1,cell.y)];
-    [top,right,bottom,left].forEach(n=>{ if(n && !n.visited) neighbors.push(n); });
-    return neighbors.length>0? neighbors[Math.floor(Math.random()*neighbors.length)] : undefined;
-    }
-
-    function removeWalls(a,b){
-    let x=a.x-b.x, y=a.y-b.y;
-    if(x===1){ a.walls[3]=false; b.walls[1]=false; }
-    else if(x===-1){ a.walls[1]=false; b.walls[3]=false; }
-    if(y===1){ a.walls[0]=false; b.walls[2]=false; }
-    else if(y===-1){ a.walls[2]=false; b.walls[0]=false; }
-    }
-
-    function drawPlayerAndGoal(){
-    ctx.fillStyle="gold"; ctx.fillRect(goal.x*cellSize,goal.y*cellSize,cellSize,cellSize);
-    ctx.fillStyle="red";
-    ctx.beginPath();
-    ctx.arc(player.x*cellSize+cellSize/2,player.y*cellSize+cellSize/2,cellSize/3,0,Math.PI*2);
-    ctx.fill();
-    }
-
-    // 自由に戻れる仕様
-    function movePlayer(dx,dy){
-    const nextX = player.x + dx;
-    const nextY = player.y + dy;
-    if(nextX<0 || nextX>=cols || nextY<0 || nextY>=rows) return; // 外には出れない
-    const cell = grid[index(player.x,player.y)];
-    // 壁チェック
-    if(dx===-1 && cell.walls[3]) return;
-    if(dx===1 && cell.walls[1]) return;
-    if(dy===-1 && cell.walls[0]) return;
-    if(dy===1 && cell.walls[2]) return;
-
-    player.x = nextX;
-    player.y = nextY;
-    drawPlayerAndGoal();
-
-    if(player.x===goal.x && player.y===goal.y){
-        const timeElapsed = Math.floor((Date.now()-startTime)/1000);
-        alert(`🎉 クリア！タイム: ${timeElapsed}s`);
-        player={x:0,y:0};
-        startTime = Date.now();
-        drawPlayerAndGoal();
-    }
-    }
-
-    document.addEventListener("keydown",(e)=>{
-    switch(e.key){
-        case "ArrowUp": case "w": movePlayer(0,-1); break;
-        case "ArrowDown": case "s": movePlayer(0,1); break;
-        case "ArrowLeft": case "a": movePlayer(-1,0); break;
-        case "ArrowRight": case "d": movePlayer(1,0); break;
-    }
-    });
-
-    function gamepadLoop(timestamp){
-    const gamepads = navigator.getGamepads();
-    if(gamepads[0]){
-        const gp = gamepads[0]; let dx=0, dy=0;
-        if(gp.buttons[14]?.pressed) dx=-1;
-        if(gp.buttons[15]?.pressed) dx=1;
-        if(gp.buttons[12]?.pressed) dy=-1;
-        if(gp.buttons[13]?.pressed) dy=1;
-        const threshold=0.5;
-        if(gp.axes[0]<-threshold) dx=-1;
-        if(gp.axes[0]>threshold) dx=1;
-        if(gp.axes[1]<-threshold) dy=-1;
-        if(gp.axes[1]>threshold) dy=1;
-        if(dx!==0||dy!==0){ if(timestamp-lastMoveTime>moveInterval){ movePlayer(dx,dy); lastMoveTime=timestamp; } }
-    }
-    requestAnimationFrame(gamepadLoop);
-    }
-
-    // タイマー更新
-    function updateTimer(){
-    if(player.x!==goal.x || player.y!==goal.y){
-        const seconds = Math.floor((Date.now()-startTime)/1000);
-        timerDiv.textContent = `Time: ${seconds}s`;
-        requestAnimationFrame(updateTimer);
-    }
-    }
-    </script>
-    </body>
-    </html>
+  }
+}
+</script>
+</body>
+</html>
